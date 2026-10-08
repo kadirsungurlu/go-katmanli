@@ -10,6 +10,8 @@
 # dosyalar yine de yerinde kalır.
 set -euo pipefail
 
+command -v go >/dev/null || { echo "hata: go kurulu değil" >&2; exit 1; }
+
 if [ $# -ne 3 ]; then
     sed -n '2,10p' "$0"
     exit 1
@@ -53,20 +55,28 @@ mv "$TARGET/cmd/__APP__" "$TARGET/cmd/$APP"
 mv "$TARGET/deploy/systemd/__APP__.service" "$TARGET/deploy/systemd/$APP.service"
 mkdir -p "$TARGET/data"
 
+# sed yerine koyma metninde & | \ özel anlam taşır; değerleri kaçır.
+esc() { printf '%s' "$1" | sed -e 's/[&|\\]/\\&/g'; }
+E_DATABASE_URL=$(esc "$DATABASE_URL")
+E_GOVER=$(esc "$GOVER")
+E_MODULE=$(esc "$MODULE")
+E_PREFIX=$(esc "$PREFIX")
+E_APP=$(esc "$APP")
+
 # Yer tutucuları doldur. Sıra önemli: __DATABASE_URL__ içinde __APP__ yok ama
 # yine de önce en özel olanı değiştiriyoruz.
 find "$TARGET" -type f | while read -r f; do
     sed -i \
-        -e "s|__DATABASE_URL__|$DATABASE_URL|g" \
-        -e "s|__GOVER__|$GOVER|g" \
-        -e "s|__MODULE__|$MODULE|g" \
-        -e "s|__PREFIX__|$PREFIX|g" \
-        -e "s|__APP__|$APP|g" \
+        -e "s|__DATABASE_URL__|$E_DATABASE_URL|g" \
+        -e "s|__GOVER__|$E_GOVER|g" \
+        -e "s|__MODULE__|$E_MODULE|g" \
+        -e "s|__PREFIX__|$E_PREFIX|g" \
+        -e "s|__APP__|$E_APP|g" \
         "$f"
 done
 
 cd "$TARGET"
-go mod init "$MODULE" >/dev/null 2>&1
+go mod init "$MODULE" >/dev/null
 case "$DB" in
     postgres) go get github.com/jackc/pgx/v5@latest >/dev/null ;;
     mysql)    go get github.com/go-sql-driver/mysql@latest >/dev/null ;;

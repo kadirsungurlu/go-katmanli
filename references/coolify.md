@@ -80,7 +80,7 @@ Dockerfile önce `go.mod`/`go.sum` kopyalayıp `go mod download` çalıştırır
 bu katman cache'ten gelir. Kod değişikliğinde yalnız derleme adımı tekrarlanır (~20-40 sn).
 Coolify "Build configuration changed" derse cache atlanır, bu normaldir.
 
-## Repoda COOLIFY.md
+## Repoda deploy/coolify.md
 
-Kurulum adımları ve değişken tablosu projeyle birlikte dursun: iskelette hazır gelen `COOLIFY.md`
+Kurulum adımları ve değişken tablosu projeyle birlikte dursun: iskelette hazır gelen `deploy/coolify.md`
 dosyasını doldur. Altı ay sonra sunucu taşırken tek bakılacak yer orası olsun.
